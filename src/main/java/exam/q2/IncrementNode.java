@@ -23,6 +23,15 @@ public class IncrementNode extends Node {
     @Override
     public void execute() throws InterruptedException {
         // TODO: receive → parseInt → +1 → emit
+        Message msg = receive();
+
+        String payload = msg.getPayloadAsString();
+        int val = Integer.parseInt(payload);
+
+        int result = val + 1;
+
+        emit(msg.withPayload(result));
+//        emit(Message.of(result));
     }
 }
 

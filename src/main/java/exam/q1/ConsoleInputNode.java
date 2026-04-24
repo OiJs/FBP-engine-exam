@@ -27,6 +27,7 @@ public class ConsoleInputNode extends Node {
     @Override
     public void execute() throws InterruptedException {
         // TODO: inputText를 Message로 감싸 emit
+        emit(Message.of(inputText));
     }
 }
 

@@ -60,6 +60,32 @@ public class HttpListenerNode extends Node {
     @Override
     public void execute() throws InterruptedException {
         // TODO: HttpServer 시작 + isRunning() 루프 + stop 시 server.stop(0)
+        if(server == null) {
+            try {
+                server = HttpServer.create(new InetSocketAddress(port), 0);
+                server.createContext(context, exchange -> {
+                    String path = exchange.getRequestURI().getPath();
+                    try (InputStream is = exchange.getRequestBody()) {
+                        String body = readBody(is);
+                        String payload = body.isEmpty() ? "echo: " + path : body;
+
+                        emit(Message.of(payload, Map.of(
+                                "method", exchange.getRequestMethod(),
+                                "path",   path,
+                                "exchange", exchange    // HttpResponseNode가 응답 전송에 사용
+                        )));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                server.start();
+            } catch (IOException e) {
+                throw new RuntimeException("서버 시작 실패");
+            }
+        }
+        if (isRunning()) {
+            Thread.sleep(100);
+        }
     }
 
     @Override

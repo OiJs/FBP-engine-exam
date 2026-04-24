@@ -35,10 +35,33 @@ public class TypeRouterNode extends Node {
     @Override
     public void execute() throws InterruptedException {
         // TODO: receive 하나 → isNumber 판단 → "number" 또는 "string" 포트로 emit
+        Message msg = receive();
+
+        Object payload = msg.getPayload();
+
+        if(isNumber(payload)) {
+            emit("number",Message.of(payload));
+        } else {
+            emit("string", Message.of(payload));
+        }
+
+
     }
 
     private boolean isNumber(Object payload) {
         // TODO: Number 타입 또는 parseInt 성공 여부 반환
+        if(payload instanceof Number) {
+            return true;
+        }
+
+        if(payload instanceof String) {
+            try {
+                Integer.parseInt((String) payload);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
         return false;
     }
 }

@@ -20,6 +20,11 @@ public class UpperCaseNode extends Node {
     @Override
     public void execute() throws InterruptedException {
         // TODO: receive → toUpperCase → emit
+        Message msg = receive();
+
+        String upperPayload = msg.getPayloadAsString().toUpperCase();
+
+       emit(msg.withPayload(upperPayload));
     }
 }
 

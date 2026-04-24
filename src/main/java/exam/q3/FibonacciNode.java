@@ -40,6 +40,8 @@ public class FibonacciNode extends Node {
         super(id);
         this.intervalMs = intervalMs;
         // TODO: 초기화
+        this.a = 1;
+        this.b = 1;
     }
 
     public FibonacciNode(String id) {
@@ -53,5 +55,13 @@ public class FibonacciNode extends Node {
     @Override
     public void execute() throws InterruptedException {
         // TODO
+        if(intervalMs > 0) {
+            Thread.sleep(intervalMs);
+        }
+        emit(Message.of(a));
+
+        long next = a + b;
+        a = b;
+        b = next;
     }
 }

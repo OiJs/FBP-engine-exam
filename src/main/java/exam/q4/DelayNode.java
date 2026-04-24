@@ -26,5 +26,11 @@ public class DelayNode extends Node {
     @Override
     public void execute() throws InterruptedException {
         // TODO: receive → sleep(delayMs) → emit
+        Message msg = receive();
+
+        if(delayMs > 0) {
+            Thread.sleep(delayMs);
+        }
+        emit(msg);
     }
 }

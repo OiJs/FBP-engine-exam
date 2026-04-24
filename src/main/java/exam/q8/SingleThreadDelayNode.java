@@ -49,5 +49,19 @@ public class SingleThreadDelayNode extends Node {
     public void execute() throws InterruptedException {
         // TODO: tryReceive()로 메시지를 꺼내고
         //       scheduler.schedule()로 delayMs 후 emit한다
+         Message msg = tryReceive();
+
+         if(msg == null) {
+             return;
+         }
+         if(delayMs > 0) {
+             scheduler.schedule(() -> {
+                 try {
+                     emit(msg);
+                 } catch (InterruptedException e) {
+                     Thread.currentThread().interrupt();
+                 }
+             }, delayMs, TimeUnit.MILLISECONDS);
+         }
     }
 }

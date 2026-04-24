@@ -27,6 +27,11 @@ public class ConsoleOutputNode extends Node {
     @Override
     public void execute() throws InterruptedException {
         // TODO: receive → 출력 → lastOutput 저장
+        Message msg = receive();
+        String payload = msg.getPayloadAsString();
+        this.lastOutput = payload;
+
+        System.out.println("[OUTPUT] <" + payload + ">");
     }
 
     /** 테스트 검증용 */

@@ -32,5 +32,11 @@ public class PeriodicSourceNode extends Node {
     @Override
     public void execute() throws InterruptedException {
         // TODO: sleep → seq 증가 → emit
+        if(intervalMs > 0) {
+            Thread.sleep(intervalMs);
+        }
+        seq++;
+
+        emit(Message.of(seq));
     }
 }

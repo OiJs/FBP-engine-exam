@@ -58,18 +58,36 @@ public class SingleThreadFlow {
      */
     public SingleThreadFlow addNode(Node node, long periodMs) {
         // TODO
+        nodes.add(node);
+        schedule.add(new long[]{nodes.size() - 1, periodMs});
         return this;
     }
 
     /** 스케줄러를 시작한다. */
     public SingleThreadFlow start() {
         // TODO
+        for(long[] task : schedule) {
+            int nodeIndex = (int) task[0];
+            long periodMs = task[1];
+            Node node = nodes.get(nodeIndex);
+
+            ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(
+                    node.asRunnable(), 0, periodMs, TimeUnit.MILLISECONDS);
+
+            futures.add(future);
+        }
         return this;
     }
 
     /** 스케줄러를 종료하고 1초간 대기한다. */
     public void stop() throws InterruptedException {
         // TODO
+        scheduler.shutdownNow();
+        boolean terminated = scheduler.awaitTermination(1, TimeUnit.SECONDS);
+
+        if (!terminated) {
+            System.err.println("[" + name + "] Warning: 스케줄러가 1초 내에 완전히 종료되지 않았습니다.");
+        }
     }
 
     /** 테스트용: 스케줄러 접근자 */

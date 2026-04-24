@@ -20,5 +20,13 @@ public class FanOutNode extends Node {
     @Override
     public void execute() throws InterruptedException {
         // TODO: receive → emit("out1", msg) + emit("out2", msg)
+        Message msg = receive();
+
+        if(msg == null) {
+            return;
+        }
+
+        emit("out1", msg);
+        emit("out2", msg);
     }
 }

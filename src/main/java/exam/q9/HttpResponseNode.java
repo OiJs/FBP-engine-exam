@@ -36,5 +36,18 @@ public class HttpResponseNode extends Node {
     @Override
     public void execute() throws InterruptedException {
         // TODO
+        Message msg = receive();
+        HttpExchange ex = (HttpExchange) msg.getHeader("exchange");
+
+        byte[] body = msg.getPayloadAsString().getBytes(StandardCharsets.UTF_8);
+
+        try {
+            ex.sendResponseHeaders(200, body.length);
+            try (var os = ex.getResponseBody()) {
+                os.write(body);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

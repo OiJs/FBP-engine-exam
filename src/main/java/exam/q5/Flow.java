@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * ════════════════════════════════════════════════════
@@ -79,12 +80,20 @@ public class Flow implements Runnable {
     /** 노드 인스턴스 등록. 체이닝 지원. */
     public Flow addNode(Node node) {
         // TODO
+        if(node == null) {
+            throw new IllegalArgumentException("node is null");
+        }
+        nodes.put(node.getId(), node);
         return this;
     }
 
     /** 커넥션 등록. 체이닝 지원. */
     public Flow addConnection(Connection connection) {
         // TODO
+        if(connection == null) {
+            throw new IllegalArgumentException("connection is null");
+        }
+        connections.put(connection.getId(), connection);
         return this;
     }
 
@@ -94,18 +103,37 @@ public class Flow implements Runnable {
      */
     public Flow start() {
         // TODO
+        for(Node node : nodes.values()) {
+            Thread t = new Thread(node.asRunnable(), "flow-" + name + "-" + node.getId());
+            t.setDaemon(true);
+            t.start();
+            threads.add(t);
+        }
         return this;
     }
 
     /** 모든 노드 stop() + 스레드 interrupt. */
     public Flow stop() {
         // TODO
+        for (Node node : nodes.values()) {
+            node.stop();
+        }
+        for (Thread t : threads) {
+            t.interrupt();
+        }
         return this;
     }
 
     /** 모든 스레드 join(timeoutMs). */
     public void awaitAll(long timeoutMs) throws InterruptedException {
         // TODO
+        for (Thread t : threads) {
+            try {
+                t.join(timeoutMs);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     // ════════════════════════════════════════════
@@ -118,6 +146,7 @@ public class Flow implements Runnable {
      */
     public Flow addNodeFactory(Supplier<Node> factory) {
         // TODO
+        nodeFactories.add(factory);
         return this;
     }
 
@@ -130,6 +159,7 @@ public class Flow implements Runnable {
      */
     public Flow setWiring(Consumer<List<Node>> wiring) {
         // TODO
+        this.wiring = wiring;
         return this;
     }
 
@@ -151,6 +181,26 @@ public class Flow implements Runnable {
     @Override
     public void run() {
         // TODO
+        List<Node> freshNodes = new ArrayList<>(
+                nodeFactories.stream()
+                        .map(Supplier::get)
+                        .toList()
+        );
+        if(wiring != null) {
+            wiring.accept(freshNodes);
+        }
+
+        try {
+            while(!Thread.currentThread().isInterrupted()) {
+                for(Node node : freshNodes) {
+                    node.execute();
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception e) {
+            System.err.println("[" + Thread.currentThread().getName() + "] Flow run error: " + e.getMessage());
+        }
     }
 
     // ════════════════════════════════════════════
