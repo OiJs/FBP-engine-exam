@@ -71,8 +71,15 @@ public class SingleThreadFlow {
             long periodMs = task[1];
             Node node = nodes.get(nodeIndex);
 
-            ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(
-                    node.asRunnable(), 0, periodMs, TimeUnit.MILLISECONDS);
+            ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(() -> {
+                        Thread.startVirtualThread(() -> {
+                            try {
+                                node.execute();
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                    }, 0, periodMs, TimeUnit.MILLISECONDS);
 
             futures.add(future);
         }
